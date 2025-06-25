@@ -1,30 +1,21 @@
-FROM debian:bullseye
+FROM python:3-slim
 
-# Install git, supervisor, VNC, & X11 packages
-RUN set -ex; \
-    apt-get update; \
+# -- Install Dependencies
+RUN apt-get update -y && \
     apt-get install -y \
-      bash \
-      fluxbox \
-      git \
-      net-tools \
-      novnc \
-      supervisor \
-      x11vnc \
-      xterm \
-      xvfb
+    wget supervisor git net-tools procps \
+    tigervnc-standalone-server fluxbox
 
-# Setup demo environment variables
-ENV HOME=/root \
-    DEBIAN_FRONTEND=noninteractive \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8 \
-    LC_ALL=C.UTF-8 \
-    DISPLAY=:0.0 \
-    DISPLAY_WIDTH=1024 \
-    DISPLAY_HEIGHT=768 \
-    RUN_XTERM=yes \
-    RUN_FLUXBOX=yes
+# -- manual noVNC install (debian is very old)
+RUN git clone https://github.com/novnc/noVNC.git /opt/novnc
+RUN pip install websockify numpy
+
+# -- Set Environment Variables
+ENV VNC_DESKTOP_NAME="Xvnc" \
+    VNC_GEOMETRY=1280x800 \
+    DISPLAY=:2 \
+    VNC_PORT=5902
+
 COPY . /app
-CMD ["/app/entrypoint.sh"]
+CMD supervisord -c /app/supervisord.conf
 EXPOSE 8080
