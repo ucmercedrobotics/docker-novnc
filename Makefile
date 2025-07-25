@@ -13,12 +13,11 @@ endif
 build:
 	docker build . -t ${NAME}
 
+push:
+	docker buildx build --platform linux/amd64,linux/arm64 --push -t ${NAME} .
+
 run:
 	docker run -d --rm --net=host \
-	-e NVIDIA_VISIBLE_DEVICES=all \
-	-e NVIDIA_DRIVER_CAPABILITIES=all \
-	-e __GLX_VENDOR_LIBRARY_NAME=nvidia \
-	-e __NV_PRIME_RENDER_OFFLOAD=1 \
 	$(GPU_FLAGS) \
 	--name=novnc \
 	${NAME}
